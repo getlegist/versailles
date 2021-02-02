@@ -1,8 +1,10 @@
 # 🏛 legist/versailles
-This repository contains the files and modules do
+This repository contains the files and modules that do
 - [x] Text summarization (DistilBART-CNN)
 - [ ] Named entity recognition (BERT-Large)
 - [ ] Zero-shot Categorization (BART-Large)
+
+Stack: BentoML + HuggingFace
 
 ### Packing ML Models
 ```bash
