@@ -1,8 +1,8 @@
 # 🏛 legist/versailles
 This repository contains the files and modules that do
 - [x] Text summarization (DistilBART-CNN)
-- [ ] Named entity recognition (BERT-Large)
-- [ ] Zero-shot Categorization (BART-Large)
+- [x] Named entity recognition (BERT-Large)
+- [x] Zero-shot Categorization (BART-Large)
 
 Stack: BentoML + HuggingFace
 
