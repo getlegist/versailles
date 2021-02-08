@@ -14,7 +14,7 @@ Summarizer service packed: /Users/jzhao/bentoml/repository/SummarizerService/202
 
 ### Running via CLI
 ```bash
-$ bentoml run SummarizerService:latest predict --input '{"text": "Some extended text..."}'
+$ bentoml run SummarizerService:latest predict --input '{"text": "..."}'
 A shorter response
 ```
 
