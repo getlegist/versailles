@@ -9,14 +9,16 @@ from bentoml.types import JsonSerializable, InferenceError, InferenceResult
     "torch==1.6.0"
 ])
 @bentoml.artifacts([TransformersModelArtifact("model")])
-class SummarizerService(bentoml.BentoService):
+class VersaillesService(bentoml.BentoService):
+    def get_artifacts(self):
+        return self.artifacts.model.get("model"), self.artifacts.model.get("tokenizer")
+
+
+class SummarizerService(VersaillesService):
     @bentoml.api(input=JsonInput(), batch=False)
     def predict(self, parsed_json: JsonSerializable):
         text = parsed_json.get("text")
-
-        # pull model and tokenizer from preloaded artifacts
-        model = self.artifacts.model.get("model")
-        tokenizer = self.artifacts.model.get("tokenizer")
+        model, tokenizer = self.get_artifacts()
 
         # tokenize
         inputs = tokenizer.encode("summarize: " + text, return_tensors="pt", max_length=512)
@@ -37,13 +39,8 @@ class SummarizerService(bentoml.BentoService):
             http_headers={"Content-Type": "application/json"},
         )
 
-@bentoml.env(pip_packages=[
-    "transformers==3.1.0",
-    "torch==1.6.0"
-])
-@bentoml.artifacts([TransformersModelArtifact("model")])
-class NERService(bentoml.BentoService):
 
+class NERService(VersaillesService):
     label_list = [
         "O",       # Outside of a named entity
         "B-MISC",  # Beginning of a miscellaneous entity right after another miscellaneous entity
@@ -59,10 +56,7 @@ class NERService(bentoml.BentoService):
     @bentoml.api(input=JsonInput(), batch=False)
     def predict(self, parsed_json: JsonSerializable):
         text = parsed_json.get("text")
-
-        # pull model and tokenizer from preloaded artifacts
-        model = self.artifacts.model.get("model")
-        tokenizer = self.artifacts.model.get("tokenizer")
+        model, tokenizer = self.get_artifacts()
 
         # tokenize
         tokens = tokenizer.tokenize(tokenizer.decode(tokenizer.encode(text)))
@@ -98,10 +92,55 @@ class NERService(bentoml.BentoService):
             http_headers={"Content-Type": "application/json"},
         )
 
-@bentoml.env(pip_packages=[
-    "transformers==3.1.0",
-    "torch==1.6.0"
-])
-@bentoml.artifacts([TransformersModelArtifact("model")])
-class CategorizationService(bentoml.BentoService):
-    pass
+
+class CategorizationService(VersaillesService):
+    categories = [
+        "environmental",
+        "defence",
+        "education",
+        "economy",
+        "legal",
+        "energy",
+        "healthcare",
+        "indigenous",
+        "technology",
+        "parliament",
+        "infrastructure",
+        "transportation",
+        "agriculture",
+        "media"
+    ]
+
+    def _get_hypotheses(self):
+        return [f'This example is about {label}.' for label in self.categories]
+
+    @bentoml.api(input=JsonInput(), batch=False)
+    def predict(self, parsed_json: JsonSerializable):
+        text = parsed_json.get("text")
+        model, tokenizer = self.get_artifacts()
+
+        def encode(hypothesis):
+            return tokenizer.encode(
+                text,
+                hypothesis,
+                padding='longest',
+                return_tensors='pt',
+                truncation_strategy='only_first'
+            )
+
+        hypotheses = self._get_hypotheses()
+        inputs = [encode(hypothesis) for hypothesis in hypotheses]
+        stacked = torch.stack(inputs, dim=1)
+        logits = model(stacked[0])[0]
+        entail_contradiction_logits = logits[:, [0,2]]
+        probs = entail_contradiction_logits.softmax(dim=1)[:,1]
+
+        res = {}
+        for label, prob in zip(self.categories, probs):
+            res[label] = prob.item()
+
+        return InferenceResult(
+            data=res,
+            http_status=200,
+            http_headers={"Content-Type": "application/json"},
+        )

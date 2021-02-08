@@ -2,9 +2,10 @@ import sys
 from transformers import (
     AutoModelWithLMHead,
     AutoTokenizer,
-    AutoModelForTokenClassification
+    AutoModelForTokenClassification,
+    AutoModelForSequenceClassification
 )
-from service import SummarizerService, NERService
+from service import SummarizerService, NERService, CategorizationService
 
 def pack_summarizer():
     svc = SummarizerService()
@@ -33,6 +34,19 @@ def pack_ner():
     svc.pack("model", artifact)
     print(f"NER service packed: {svc.save()}")
 
+def pack_categorization():
+    svc = CategorizationService()
+    model_name = "facebook/bart-large-mnli"
+    model = AutoModelForSequenceClassification.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+    artifact = {
+        "model": model,
+        "tokenizer": tokenizer
+    }
+    svc.pack("model", artifact)
+    print(f"Categorization service packed: {svc.save()}")
+
 if __name__ == "__main__":
     args = sys.argv[1:]
 
@@ -44,3 +58,6 @@ if __name__ == "__main__":
     if "ner" in args:
         print("Packing NER service...")
         pack_ner()
+    if "categorization" in args:
+        print("Packing Categorization service...")
+        pack_categorization()
