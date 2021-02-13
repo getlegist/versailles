@@ -1,5 +1,6 @@
 import bentoml
 import torch
+import json
 from bentoml.adapters import JsonInput
 from bentoml.frameworks.transformers import TransformersModelArtifact
 from bentoml.types import JsonSerializable, InferenceError, InferenceResult
@@ -24,7 +25,7 @@ class SummarizerService(VersaillesService):
         inputs = tokenizer.encode("summarize: " + text, return_tensors="pt", max_length=512)
 
         # invalidate token lengths of less than 10
-        if len(inputs) < 10:
+        if len(inputs[0]) < 10:
             return InferenceError(err_msg="text too short", http_status=400)
 
         # summarize text, top 4 results
@@ -32,9 +33,11 @@ class SummarizerService(VersaillesService):
 
         # decode most likely
         output = tokenizer.decode(output[0], skip_special_tokens=True).replace(" .", ".")
-
+        json_out = json.dumps({
+            "result": output
+        })
         return InferenceResult(
-            data=output,
+            data=json_out,
             http_status=200,
             http_headers={"Content-Type": "application/json"},
         )
@@ -86,8 +89,11 @@ class NERService(VersaillesService):
                     res.append((token, decoded))
             prev_decoded = decoded
 
+        json_out = json.dumps({
+            "result": res
+        })
         return InferenceResult(
-            data=res,
+            data=json_out,
             http_status=200,
             http_headers={"Content-Type": "application/json"},
         )
@@ -139,8 +145,11 @@ class CategorizationService(VersaillesService):
         for label, prob in zip(self.categories, probs):
             res[label] = prob.item()
 
+        json_out = json.dumps({
+            "result": res
+        })
         return InferenceResult(
-            data=res,
+            data=json_out,
             http_status=200,
             http_headers={"Content-Type": "application/json"},
         )
