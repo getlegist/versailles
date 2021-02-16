@@ -6,8 +6,8 @@ from bentoml.frameworks.transformers import TransformersModelArtifact
 from bentoml.types import JsonSerializable, InferenceError, InferenceResult
 
 @bentoml.env(pip_packages=[
-    "transformers==3.1.0",
-    "torch==1.6.0"
+    "transformers==4.2.1",
+    "torch==1.7.1"
 ])
 @bentoml.artifacts([TransformersModelArtifact("model")])
 class VersaillesService(bentoml.BentoService):

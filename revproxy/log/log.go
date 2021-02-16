@@ -23,14 +23,14 @@ func SysInfo(info string) {
 }
 
 func ProxyReq(targetUrl string) {
-	L.Debug("proxying url", zap.String("url", targetUrl), zap.String("type", "rev_proxy"))
+	L.Info("proxying url", zap.String("url", targetUrl), zap.String("type", "rev_proxy"))
 }
 
 // middleware to log all requests
 func Handler(req http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		m := httpsnoop.CaptureMetrics(req, w, r)
-		L.Debug(
+		L.Info(
 			"incoming request",
 			zap.String("method", r.Method),
 			zap.String("url", r.URL.String()),

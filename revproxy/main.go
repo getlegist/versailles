@@ -10,15 +10,18 @@ import (
 )
 
 const (
-	Summarization = "http://summarization:5000/predict"
-	NER = "http://ner:5000/predict"
-	Categorization = "http://categorization:5000/predict"
+	Summarization = "http://summarization:5000"
+	NER = "http://ner:5000"
+	Categorization = "http://categorization:5000"
 
 	Port = ":8000"
 )
 
 func muxRedir(redirLocation string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// reset to root
+		r.URL.Path = "/predict"
+
 		// parse the url
 		uri, _ := url.Parse(redirLocation)
 
@@ -39,8 +42,8 @@ func muxRedir(redirLocation string) func(w http.ResponseWriter, r *http.Request)
 
 func main() {
 	http.HandleFunc("/summarize", log.Handler(muxRedir(Summarization)))
-	http.HandleFunc("/categorize", log.Handler(muxRedir(NER)))
-	http.HandleFunc("/ner", log.Handler(muxRedir(Categorization)))
+	http.HandleFunc("/categorize", log.Handler(muxRedir(Categorization)))
+	http.HandleFunc("/ner", log.Handler(muxRedir(NER)))
 	http.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "healthy")
 	})

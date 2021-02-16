@@ -15,4 +15,4 @@ docker: docker-c docker-n docker-s ## Containerize all services
 	echo "done!"
 
 compose: ## Run all services
-	docker-compose up
+	docker-compose up --build
