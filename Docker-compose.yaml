@@ -1,0 +1,14 @@
+version: "3.7"
+services:
+  summarization:
+    image: legist/summarization:latest
+    ports:
+      - "3000:5000"
+  ner:
+    image: legist/ner:latest
+    ports:
+      - "4000:5000"
+  categorization:
+    image: legist/categorization:latest
+    ports:
+      - "5000:5000"
