@@ -2,13 +2,24 @@ version: "3.7"
 services:
   summarization:
     image: legist/summarization:latest
+    command: --enable-microbatch --workers=1
     ports:
       - "3000:5000"
   ner:
     image: legist/ner:latest
+    command: --enable-microbatch --workers=1
     ports:
       - "4000:5000"
   categorization:
     image: legist/categorization:latest
+    command: --enable-microbatch --workers=1
     ports:
       - "5000:5000"
+  revproxy:
+    image: legist/revproxy:latest
+    command: --enable-microbatch --workers=1
+    build:
+      context: revproxy
+      dockerfile: 'Dockerfile'
+    ports:
+      - "8000:8000"
